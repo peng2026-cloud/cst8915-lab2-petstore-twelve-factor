@@ -28,6 +28,20 @@ Each service has its own public repository with two commits: the unchanged Lab 1
 
 The lab asks for four VMs. My Azure for Students subscription allows only 6 vCPUs and 3 public IP addresses per region, and the smallest VM size it can use has 2 vCPUs, so four VMs do not fit in one region. As the professor allowed for this case, I used two VMs: one for RabbitMQ and one for the three application services. RabbitMQ is still a separate machine that the Order Service reaches through its public IP.
 
+Quota check in West US 2 with the two VMs deployed (Azure CLI). Four VMs would need at least 8 vCPUs and 4 public IPs:
+
+```text
+> az vm list-usage --location westus2 --query "[?localName=='Total Regional vCPUs'].{Name:localName, CurrentValue:currentValue, Limit:limit}" -o table
+Name                  CurrentValue    Limit
+--------------------  --------------  -------
+Total Regional vCPUs  4               6
+
+> az network list-usages --location westus2 --query "[?name.value=='PublicIPAddresses'].{Name:name.localizedValue, CurrentValue:currentValue, Limit:limit}" -o table
+Name                 CurrentValue    Limit
+-------------------  --------------  -------
+Public IP Addresses  2               3
+```
+
 | VM | Public IP | Runs | Inbound rules (NSG) |
 |---|---|---|---|
 | `rabbitmq-vm` | 4.154.75.161 | RabbitMQ (backing service) | 22 from my laptop; 5672 only from `app-vm` |
